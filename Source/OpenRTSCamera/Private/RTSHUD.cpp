@@ -1,5 +1,6 @@
 #include "RTSHUD.h"
-#include "RTSSelector.h"
+#include "RTSCamera.h"
+//#include "RTSSelector.h"
 #include "Engine/Canvas.h"
 
 // Constructor implementation: Initializes default values.
@@ -73,14 +74,21 @@ void ARTSHUD::PerformSelection_Implementation()
 	TArray<AActor*> SelectedActors;
 	GetActorsInSelectionRectangle<AActor>(SelectionStart, SelectionEnd, SelectedActors, false, false);
 
+
+
 	// Find the URTSSelector component and pass the selected actors to it.
 	if (const auto PC = GetOwningPlayerController())
 	{
-		if (const auto SelectorComponent = PC->FindComponentByClass<URTSSelector>())
+		APawn* ControlledPawn = PC->GetPawn();
+		//UE_LOG(LogTemp, Log, TEXT("%s"), ControlledPawn->FindComponentByClass<URTSCamera>());
+
+
+		if (const auto SelectorComponent = ControlledPawn->FindComponentByClass<URTSCamera>())
 		{
 			SelectorComponent->HandleSelectedActors(SelectedActors);
+			//UE_LOG(LogTemp, Log, TEXT("%s"), SelectorComponent);
 		}
 	}
-
+	
 	bIsPerformingSelection = false;
 }

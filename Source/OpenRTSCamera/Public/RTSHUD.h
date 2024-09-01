@@ -35,12 +35,16 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Selection Box")
 	void PerformSelection();
 
+	UPROPERTY()
+	bool bIsDrawingSelectionBox;
+	UPROPERTY()
+	bool bIsPerformingSelection;
+
 protected:
 	virtual void DrawHUD() override;
 
 private:
-	bool bIsDrawingSelectionBox;
-	bool bIsPerformingSelection;
+
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
 };

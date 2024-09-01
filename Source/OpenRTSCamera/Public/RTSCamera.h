@@ -3,7 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputAction.h"
 #include "InputMappingContext.h"
+//#include "Delegates/DelegateCombinations.h"
+#include "RTSHUD.h"
+#include "RTSSelectable.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -119,6 +123,9 @@ public:
 	)
 	float DistanceFromEdgeThreshold;
 
+
+
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera - Inputs")
 	UInputMappingContext* InputMappingContext;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera - Inputs")
@@ -135,6 +142,100 @@ public:
 	UInputAction* DragCamera;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera - Inputs")
 	UInputAction* ZoomCamera;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera")
+	bool IsDragging;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera")
+	bool IsMove;
+
+
+	UPROPERTY()
+	double RTSMouseLeftMovement;
+	UPROPERTY()
+	double RTSMouseRightMovement;
+	UPROPERTY()
+	double RTSMouseUpMovement;
+	UPROPERTY()
+	double RTSMouseDownMovement;
+
+	UPROPERTY()
+	double RTSMouseSelectRate;
+
+	UPROPERTY()
+	int32 LastMouseX;
+	UPROPERTY()
+	int32 LastMouseY;
+	UPROPERTY()
+	bool bIsFirstTick;
+
+	//获取摄像机旋转
+	UPROPERTY()
+	FRotator SpringArmLocalRotation;
+
+	int32 DeltaX;
+	int32 DeltaY;
+	float RotationX;
+	float RotationY;
+
+	UPROPERTY()
+	double RTSKeyXMovement;
+	UPROPERTY()
+	double RTSKeyYMovement;
+
+
+	UPROPERTY()
+	bool bIsMoveCameraYAxisCalled = false;
+	UPROPERTY()
+	bool bIsMoveCameraXAxisCalled = false;
+
+	UPROPERTY()
+	bool IsKeyBoardMove;
+	UPROPERTY()
+	bool IsMouseMove;
+
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera")
+	FVector LastPosition;
+
+
+	// "RTSSelector.h"
+
+	// BlueprintAssignable allows binding in Blueprints
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorsSelected, const TArray<AActor*>&, SelectedActors);
+	UPROPERTY(BlueprintAssignable)
+	FOnActorsSelected OnActorsSelected;
+
+	// BlueprintReadWrite allows access and modification in Blueprints
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera - Inputs")
+	//UInputMappingContext* InputMappingContext;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "RTSCamera - Inputs")
+	UInputAction* BeginSelection;
+
+	// Function to clear selected actors, can be overridden in Blueprints
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RTSCamera - Selection")
+	void ClearSelectedActors();
+
+	// Function to handle selected actors, can be overridden in Blueprints
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RTSCamera - Selection")
+	void HandleSelectedActors(const TArray<AActor*>& NewSelectedActors);
+
+	// BlueprintCallable to allow calling from Blueprints
+	UFUNCTION(BlueprintCallable, Category = "RTSCamera - Selection")
+	void OnSelectionStart(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable, Category = "RTSCamera - Selection")
+	void OnUpdateSelection(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable, Category = "RTSCamera - Selection")
+	void OnSelectionEnd(const FInputActionValue& Value);
+
+	UPROPERTY(BlueprintReadOnly, Category = "RTSCamera - Selection")
+	TArray<URTSSelectable*> SelectedActors;
+
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -165,6 +266,17 @@ protected:
 	UPROPERTY()
 	float DesiredZoomLength;
 
+	void ConditionallyPerformEdgeScrolling();
+
+
+	// "RTSSelector.h"
+
+	//virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+
+
 private:
 	void CollectComponentDependencyReferences();
 	void ConfigureSpringArm();
@@ -174,11 +286,10 @@ private:
 	void BindInputMappingContext() const;
 	void BindInputActions();
 
-	void ConditionallyPerformEdgeScrolling() const;
-	void EdgeScrollLeft() const;
-	void EdgeScrollRight() const;
-	void EdgeScrollUp() const;
-	void EdgeScrollDown() const;
+	double EdgeScrollLeft() const;
+	double EdgeScrollRight() const;
+	double EdgeScrollUp() const;
+	double EdgeScrollDown() const;
 
 	void FollowTargetIfSet() const;
 	void SmoothTargetArmLengthToDesiredZoom() const;
@@ -193,10 +304,30 @@ private:
 	float DeltaSeconds;
 	UPROPERTY()
 	bool IsCameraOutOfBoundsErrorAlreadyDisplayed;
-	UPROPERTY()
-	bool IsDragging;
+
 	UPROPERTY()
 	FVector2D DragStartLocation;
+
 	UPROPERTY()
 	TArray<FMoveCameraCommand> MoveCameraCommands;
+
+
+	// "RTSSelector.h"
+
+	//UPROPERTY()
+	//APlayerController* PlayerController;
+
+	UPROPERTY()
+	ARTSHUD* HUD;
+
+	FVector2D SelectionStart;
+	FVector2D SelectionEnd;
+
+	bool bIsSelecting;
+
+	//void BindInputActions();
+	//void BindInputMappingContext();
+	//void CollectComponentDependencyReferences();
+
+
 };
